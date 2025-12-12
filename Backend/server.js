@@ -5,6 +5,7 @@ import connectDB from "./config/db.js";
 
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoutes.js";
+import sweetRoutes from "./routes/sweetRoutes.js";
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ app.use(cookieParser());
 app.use(cors());
 
 app.use('/api/auth', authRoutes);
+app.use('/api/sweets', sweetRoutes);
 
 connectDB();
 const PORT = process.env.PORT || 5000;
