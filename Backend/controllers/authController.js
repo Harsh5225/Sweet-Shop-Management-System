@@ -25,8 +25,8 @@ const registerUser = asyncHandler(async (req, res) => {
 
         res.cookie('jwt', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV !== 'development' && process.env.NODE_ENV !== 'test',
-            sameSite: 'strict',
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
             maxAge: 30 * 24 * 60 * 60 * 1000
         });
 
@@ -52,8 +52,8 @@ const loginUser = asyncHandler(async (req, res) => {
 
         res.cookie('jwt', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV !== 'development' && process.env.NODE_ENV !== 'test',
-            sameSite: 'strict',
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
             maxAge: 30 * 24 * 60 * 60 * 1000
         });
 
