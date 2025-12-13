@@ -1,13 +1,14 @@
 import Sweet from '../models/Sweet.models.js';
+import asyncHandler from '../middleware/asyncHandler.js';
 
-const createSweet = async (req, res) => {
+const createSweet = asyncHandler(async (req, res) => {
     const { name, category, price, quantity } = req.body;
 
     const sweetExists = await Sweet.findOne({ name });
 
     if (sweetExists) {
-        res.status(400).json({ message: 'Sweet already exists' });
-        return;
+        res.status(400);
+        throw new Error('Sweet already exists');
     }
 
     const sweet = await Sweet.create({
@@ -20,17 +21,18 @@ const createSweet = async (req, res) => {
     if (sweet) {
         res.status(201).json(sweet);
     } else {
-        res.status(400).json({ message: 'Invalid sweet data' });
+        res.status(400);
+        throw new Error('Invalid sweet data');
     }
-};
+});
 
-const getAllSweets = async (req, res) => {
+const getAllSweets = asyncHandler(async (req, res) => {
     const sweets = await Sweet.find({});
     res.json(sweets);
-};
+});
 
 
-const searchSweets = async (req, res) => {
+const searchSweets = asyncHandler(async (req, res) => {
     const { name, category, minPrice, maxPrice } = req.query;
 
     let query = {};
@@ -51,10 +53,10 @@ const searchSweets = async (req, res) => {
 
     const sweets = await Sweet.find(query);
     res.json(sweets);
-};
+});
 
 
-const updateSweet = async (req, res) => {
+const updateSweet = asyncHandler(async (req, res) => {
     const sweet = await Sweet.findById(req.params.id);
 
     if (sweet) {
@@ -66,26 +68,80 @@ const updateSweet = async (req, res) => {
         const updatedSweet = await sweet.save();
         res.json(updatedSweet);
     } else {
-        res.status(404).json({ message: 'Sweet not found' });
+        res.status(404);
+        throw new Error('Sweet not found');
     }
-};
+});
 
 
-const deleteSweet = async (req, res) => {
+const deleteSweet = asyncHandler(async (req, res) => {
     const sweet = await Sweet.findById(req.params.id);
 
     if (sweet) {
         await sweet.deleteOne();
         res.json({ message: 'Sweet removed' });
     } else {
-        res.status(404).json({ message: 'Sweet not found' });
+        res.status(404);
+        throw new Error('Sweet not found');
     }
-};
+});
+
+
+const purchaseSweet = asyncHandler(async (req, res) => {
+    const { quantity } = req.body;
+    const qtyToPurchase = quantity || 1;
+
+    const sweet = await Sweet.findById(req.params.id);
+
+    if (!sweet) {
+        res.status(404);
+        throw new Error('Sweet not found');
+    }
+
+    if (sweet.quantity < qtyToPurchase) {
+        res.status(400);
+        throw new Error('Not enough sweets in stock');
+    }
+
+    sweet.quantity -= qtyToPurchase;
+    await sweet.save();
+
+    // Add to user's purchasedSweets
+    // Note: Assuming req.user is populated by auth middleware
+    if (req.user) {
+        req.user.purchasedSweets.push({
+            sweet: sweet._id,
+            quantity: qtyToPurchase
+        });
+        await req.user.save();
+    }
+
+    res.json({ message: 'Purchase successful', remainingStock: sweet.quantity });
+});
+
+
+const restockSweet = asyncHandler(async (req, res) => {
+    const { quantity } = req.body;
+    const qtyToRestock = quantity || 1;
+
+    const sweet = await Sweet.findById(req.params.id);
+
+    if (sweet) {
+        sweet.quantity += Number(qtyToRestock);
+        await sweet.save();
+        res.json({ message: 'Restock successful', currentStock: sweet.quantity });
+    } else {
+        res.status(404);
+        throw new Error('Sweet not found');
+    }
+});
 
 export {
     createSweet,
     getAllSweets,
     searchSweets,
     updateSweet,
-    deleteSweet
+    deleteSweet,
+    purchaseSweet,
+    restockSweet
 };

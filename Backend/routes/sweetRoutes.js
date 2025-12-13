@@ -4,7 +4,9 @@ import {
     getAllSweets,
     searchSweets,
     updateSweet,
-    deleteSweet
+    deleteSweet,
+    purchaseSweet,
+    restockSweet
 } from '../controllers/sweetController.js';
 import { authmiddleware, adminmiddleware } from '../middleware/authMiddleware.js';
 
@@ -12,6 +14,9 @@ const router = express.Router();
 
 // Search route must be before generic /:id routes to avoid conflict
 router.get('/search', authmiddleware, searchSweets);
+
+router.post('/:id/purchase', authmiddleware, purchaseSweet);
+router.post('/:id/restock', authmiddleware, adminmiddleware, restockSweet);
 
 router.route('/')
     .post(authmiddleware, adminmiddleware, createSweet)

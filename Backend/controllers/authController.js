@@ -1,15 +1,16 @@
 import User from '../models/User.models.js';
 import generateToken from '../utils/generateToken.js';
+import asyncHandler from '../middleware/asyncHandler.js';
 
 
-const registerUser = async (req, res) => {
+const registerUser = asyncHandler(async (req, res) => {
     const { name, email, password, role } = req.body;
 
     const userExists = await User.findOne({ email });
 
     if (userExists) {
-        res.status(400).json({ message: 'User already exists' });
-        return;
+        res.status(400);
+        throw new Error('User already exists');
     }
 
     const user = await User.create({
@@ -36,11 +37,12 @@ const registerUser = async (req, res) => {
             role: user.role
         });
     } else {
-        res.status(400).json({ message: 'Invalid user data' });
+        res.status(400);
+        throw new Error('Invalid user data');
     }
-};
+});
 
-const loginUser = async (req, res) => {
+const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
@@ -62,9 +64,10 @@ const loginUser = async (req, res) => {
             role: user.role
         });
     } else {
-        res.status(401).json({ message: 'Invalid email or password' });
+        res.status(401);
+        throw new Error('Invalid email or password');
     }
-};
+});
 
 const logoutUser = (req, res) => {
     res.cookie('jwt', '', {
