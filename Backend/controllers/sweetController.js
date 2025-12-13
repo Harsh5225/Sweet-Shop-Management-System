@@ -1,4 +1,5 @@
 import Sweet from '../models/Sweet.models.js';
+import User from '../models/User.models.js';
 import asyncHandler from '../middleware/asyncHandler.js';
 
 const createSweet = asyncHandler(async (req, res) => {
@@ -109,11 +110,14 @@ const purchaseSweet = asyncHandler(async (req, res) => {
     // Add to user's purchasedSweets
     // Note: Assuming req.user is populated by auth middleware
     if (req.user) {
-        req.user.purchasedSweets.push({
-            sweet: sweet._id,
-            quantity: qtyToPurchase
+        await User.findByIdAndUpdate(req.user._id, {
+            $push: {
+                purchasedSweets: {
+                    sweet: sweet._id,
+                    quantity: qtyToPurchase
+                }
+            }
         });
-        await req.user.save();
     }
 
     res.json({ message: 'Purchase successful', remainingStock: sweet.quantity });
