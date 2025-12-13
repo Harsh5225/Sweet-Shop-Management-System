@@ -14,7 +14,22 @@ const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors());
+const allowedOrigins = ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:5174'];
+
+const corsOptions = {
+    origin: (origin, callback) => {
+        if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
+app.options(/.*/, cors(corsOptions)); // Enable pre-flight for all routes using Regex for Express 5 compatibility
 
 app.use('/api/auth', authRoutes);
 app.use('/api/sweets', sweetRoutes);
