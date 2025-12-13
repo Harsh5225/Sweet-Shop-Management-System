@@ -30,7 +30,6 @@ I utilized AI tools (specifically **Antigravity**, powered by Google Gemini mode
 
 ### AI Tools Used
 -   **Antigravity (Agentic Coding Assistant)**: Used for code generation, refactoring, and documentation.
--   **GitHub Copilot/Others**: (If applicable, mention usage here, otherwise focus on the agent usage).
 
 ### How I Used Them
 
